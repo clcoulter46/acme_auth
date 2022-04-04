@@ -4,6 +4,7 @@ const { STRING } = Sequelize;
 const config = {
   logging: false
 };
+const bcrypt = require('bcrypt')
 
 
 if(process.env.LOGGING){
@@ -43,11 +44,11 @@ User.byToken = async(token)=> {
 User.authenticate = async({ username, password })=> {
   const user = await User.findOne({
     where: {
-      username,
-      password
+      username
     }
   });
-  if(user){
+  const check = await bcrypt.compare(password, user.password)
+  if(check){
     let token = await jwt.sign({ userId: user.id}, process.env.JWT)
     return token;
   }
@@ -74,6 +75,11 @@ const syncAndSeed = async()=> {
     }
   };
 };
+
+User.beforeCreate(async user => {
+  const hashed = await bcrypt.hash(user.password, 10)
+  user.password = hashed
+})
 
 module.exports = {
   syncAndSeed,
