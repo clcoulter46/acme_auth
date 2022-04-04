@@ -5,7 +5,6 @@ const config = {
   logging: false
 };
 
-const SECRET_KEY = process.env.JWT
 
 if(process.env.LOGGING){
   delete config.logging;
@@ -19,17 +18,14 @@ const User = conn.define('user', {
 
 User.byToken = async(token)=> {
   try {
-    const verifyUser = await jwt.verify(token, SECRET_KEY)
-    console.log(verifyUser);
-   
+    const verifyUser = await jwt.verify(token, process.env.JWT)
+
     if(verifyUser){
-    //  const user = await User.findByPk(token);
-     const user = await User.findAll({
+     const user = await User.findOne({
          where: {
             id: verifyUser.userId,
          }
-     })
-     console.log("user was found", user);
+     });
       return user;
     }
     const error = Error('bad credentials');
@@ -37,6 +33,7 @@ User.byToken = async(token)=> {
     throw error;
   }
   catch(ex){
+    console.log(ex)
     const error = Error('bad credentials');
     error.status = 401;
     throw error;
@@ -51,8 +48,8 @@ User.authenticate = async({ username, password })=> {
     }
   });
   if(user){
-    let token = await jwt.sign({ userId: user.id}, SECRET_KEY)
-    return token; 
+    let token = await jwt.sign({ userId: user.id}, process.env.JWT)
+    return token;
   }
   const error = Error('bad credentials');
   error.status = 401;

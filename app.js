@@ -17,8 +17,8 @@ app.post('/api/auth', async(req, res, next)=> {
 
 app.get('/api/auth', async(req, res, next)=> {
   try {
-    //const payload = await jwt.verify()
-    res.send(await User.byToken(req.headers.authorization));
+    res.send(await User.byToken(req.headers.authorization)
+    );
  }
   catch(ex){
     next(ex);
