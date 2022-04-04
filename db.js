@@ -17,6 +17,13 @@ const User = conn.define('user', {
   password: STRING
 });
 
+const Note = conn.define('note', {
+    text: STRING,
+})
+
+Note.belongsTo(User);
+User.hasMany(Note);
+
 User.byToken = async(token)=> {
   try {
     const verifyUser = await jwt.verify(token, process.env.JWT)
@@ -64,9 +71,29 @@ const syncAndSeed = async()=> {
     { username: 'moe', password: 'moe_pw'},
     { username: 'larry', password: 'larry_pw'}
   ];
+
+  let userIdNumber = Math.ceil(Math.random() * credentials.length);
+
+  const notes = [
+      { text: 'alskjflaksjflkasf', userId: userIdNumber },
+      { text: 'lkajsflkasdfl', userId: userIdNumber },
+      { text: 'lksdflksfdljkasdf', userId: userIdNumber }
+  ]
+
   const [lucy, moe, larry] = await Promise.all(
     credentials.map( credential => User.create(credential))
   );
+
+  for (let i = 0; i < notes.length; i++) {
+      Note.create(notes[i])
+  }
+
+// **** EXAMPLE SOLUTION FROM WORKSHOP ****
+// const notes = [ { text: 'hello world'}, { text: 'reminder to buy groceries'}, { text: 'reminder to do laundry'} ];
+// const [note1, note2, note3] = await Promise.all(notes.map( note => Note.create(note)));
+// await lucy.setNotes(note1);
+// await moe.setNotes([note2, note3]);
+
   return {
     users: {
       lucy,

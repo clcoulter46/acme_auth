@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const express = require('express');
 const app = express();
 app.use(express.json());
-const { models: { User }} = require('./db');
+const { models: { User}} = require('./db');
+const { models: { Note }} = require('./db');
 const path = require('path');
 
 app.get('/', (req, res)=> res.sendFile(path.join(__dirname, 'index.html')));
@@ -14,6 +16,25 @@ app.post('/api/auth', async(req, res, next)=> {
     next(ex);
   }
 });
+
+app.get('/api/users/:id/notes', async(req, res, next) => {
+    try {
+        const userNotes = await User.findAll({
+            include: [{
+                model: Note,
+                as: "notes"
+            }],
+            where: {
+                id: req.params.id
+            }
+        })
+        console.log("user notes", userNotes);
+        res.send(userNotes);
+    
+    } catch (err) {
+        next(err);
+    }
+})
 
 app.get('/api/auth', async(req, res, next)=> {
   try {
